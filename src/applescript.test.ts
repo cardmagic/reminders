@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { guessListForReminder } from './applescript.js'
+import { guessListForReminder, escapeAppleScript, formatAppleScriptDate } from './applescript.js'
 import type { ListForGuessing } from './applescript.js'
 
 const defaultLists: ListForGuessing[] = [
@@ -13,6 +13,48 @@ const defaultLists: ListForGuessing[] = [
   { name: 'Travel' },
   { name: 'Family' },
 ]
+
+describe('escapeAppleScript', () => {
+  it('escapes backslashes', () => {
+    expect(escapeAppleScript('a\\b')).toBe('a\\\\b')
+  })
+
+  it('escapes double quotes', () => {
+    expect(escapeAppleScript('say "hello"')).toBe('say \\"hello\\"')
+  })
+
+  it('handles combined escaping', () => {
+    expect(escapeAppleScript('path\\to\\"file"')).toBe('path\\\\to\\\\\\"file\\"')
+  })
+
+  it('passes through normal strings', () => {
+    expect(escapeAppleScript('Hello, World!')).toBe('Hello, World!')
+  })
+
+  it('handles empty string', () => {
+    expect(escapeAppleScript('')).toBe('')
+  })
+})
+
+describe('formatAppleScriptDate', () => {
+  it('formats a date into AppleScript date literal', () => {
+    const date = new Date(2024, 0, 15, 9, 30) // Jan 15, 2024 09:30
+    const result = formatAppleScriptDate(date)
+    expect(result).toBe('date "1/15/2024 9:30"')
+  })
+
+  it('pads minutes with zero', () => {
+    const date = new Date(2024, 5, 1, 14, 5) // Jun 1, 2024 14:05
+    const result = formatAppleScriptDate(date)
+    expect(result).toBe('date "6/1/2024 14:05"')
+  })
+
+  it('handles midnight', () => {
+    const date = new Date(2024, 11, 25, 0, 0) // Dec 25, 2024 00:00
+    const result = formatAppleScriptDate(date)
+    expect(result).toBe('date "12/25/2024 0:00"')
+  })
+})
 
 describe('guessListForReminder', () => {
   it('returns null for empty available lists', () => {
@@ -59,8 +101,6 @@ describe('guessListForReminder', () => {
   })
 
   it('matches family keywords to Family list', () => {
-    // "Call" is also a work keyword, so "Call mom" matches Work first due to iteration order.
-    // Use a title with only family keywords.
     expect(guessListForReminder('Visit mom this weekend', undefined, defaultLists)).toBe('Family')
     expect(guessListForReminder('Pick up kid from school', undefined, defaultLists)).toBe('Family')
   })
@@ -70,7 +110,6 @@ describe('guessListForReminder', () => {
   })
 
   it('prefers exact list name match over keyword match', () => {
-    // "groceries" appears in title and matches Groceries list name directly
     expect(guessListForReminder('Check groceries', undefined, defaultLists)).toBe('Groceries')
   })
 

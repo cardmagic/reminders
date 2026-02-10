@@ -20,7 +20,7 @@ export interface ListForGuessing {
   name: string
 }
 
-function escapeAppleScript(str: string): string {
+export function escapeAppleScript(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 }
 
@@ -75,7 +75,7 @@ export function guessListForReminder(
   return null
 }
 
-function formatAppleScriptDate(date: Date): string {
+export function formatAppleScriptDate(date: Date): string {
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const day = date.getDate()

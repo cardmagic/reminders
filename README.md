@@ -203,6 +203,12 @@ For Claude Desktop or VS Code, add to your MCP configuration:
 }
 ```
 
+For codex, you can add the MCP manually as well:
+
+```bash
+codex mcp add reminders -- npx -y @cardmagic/reminders --mcp
+```
+
 ## How It Works
 
 1. **Auto-Indexing**: On first run (or when reminders change), the tool:
